@@ -17,17 +17,36 @@ spark = SparkSession.builder.getOrCreate()
 
 # Spark SQL - DataFrame API
 
+f = sc.textFile("gbooks")
+data_rdd = f.map(lambda line: (line.split()[0], int(line.split()[1])))
+
+schema = StructType(
+    [StructField("word", StringType(), True), StructField("year", IntegerType(), True)]
+)
+
+df = data_rdd.toDF(schema)
+
 
 ####
 # 5. Joining : The following program construct a new dataframe out of 'df' with a much smaller size.
 ####
 
 df2 = df.select("word", "year").distinct().limit(100)
-df2.createOrReplaceTempView('gbooks2')
+df2.createOrReplaceTempView("gbooks2")
 
 # Now we are going to perform a JOIN operation on 'df2'. Do a self-join on 'df2' in lines with the same #'count1' values and see how many lines this JOIN could produce. Answer this question via Spark SQL API
+
+joined = spark.sql(
+    """
+    SELECT a.word AS word1, b.word AS word2, a.year AS year
+    FROM gbooks2 AS a
+    JOIN gbooks2 AS b
+    ON a.year = b.year
+    """
+)
+
+print(joined.count())
 
 # Spark SQL API
 
 # output: 166
-
