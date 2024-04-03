@@ -22,7 +22,7 @@ spark = SparkSession.builder.getOrCreate()
 # 2. Counting : How many lines does the file contains? Answer this question via both RDD api & #Spark SQL
 ####
 
-# Spark SQL 
+# Spark SQL
 
 # sqlContext.sql(query).show() or df.show()
 # +--------+
@@ -31,4 +31,10 @@ spark = SparkSession.builder.getOrCreate()
 # |   50013|
 # +--------+
 
+f = sc.textFile("gbooks")
+data_rdd = f.map(lambda line: [x for x in line.split()])
 
+schema = StructType([StructField("count(1)", StringType(), True)])
+
+data_df = sc.parallelize([(data_rdd.count(),)]).toDF(["count(1)"])
+data_df.show()
