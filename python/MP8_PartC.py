@@ -29,4 +29,15 @@ spark = SparkSession.builder.getOrCreate()
 # |      11|
 # +--------+
 
+f = sc.textFile("gbooks")
+data_rdd = f.map(lambda line: (line.split()[0], int(line.split()[1])))
 
+schema = StructType(
+    [StructField("word", StringType(), True), StructField("year", IntegerType(), True)]
+)
+
+data_df = data_rdd.toDF(schema)
+count = data_df.filter(data_df.word == "ATTRIBUTE").count()
+
+new_df = sc.parallelize([(count,)]).toDF(["count(1)"])
+new_df.show()
