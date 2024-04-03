@@ -35,3 +35,26 @@ spark = SparkSession.builder.getOrCreate()
 # only showing top 3 rows
 
 # The above output may look slightly different for you due to ties with other words
+
+f = sc.textFile("gbooks")
+data_rdd = f.map(lambda line: (line.split()[0], int(line.split()[1])))
+
+schema = StructType(
+    [StructField("word", StringType(), True), StructField("year", IntegerType(), True)]
+)
+
+data_df = data_rdd.toDF(schema)
+data_df.createOrReplaceTempView("words")
+
+word_count_df = spark.sql(
+    """
+    SELECT word, COUNT(1) as count
+    FROM words
+    GROUP BY word
+    ORDER BY count DESC
+    """
+)
+
+word_count_df = word_count_df.withColumnRenamed("count", "count(1)")
+
+word_count_df.show(3)
